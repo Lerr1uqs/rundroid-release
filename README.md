@@ -61,9 +61,13 @@ result = emu.invoke_native(native, b"payload")
 
 第二段适用于实际导出 `JNI_OnLoad` 并注册了该方法的库。调用前还需注册目标用到的 Java class/native 声明；完整写法见 [Python 使用 Skill](skills/rundroid-python/SKILL.md)。
 
-## 示例：补环境、挂虚拟文件、拦截和调试
+## Feature 展示
 
-下面假设目标会读取 `/proc/self/status`、调用 libc 的 `strlen`，并导出 `target_fn`。换成目标实际使用的路径和符号即可；这些设置都发生在装载或调用之前。
+下面是一条独立于“最小调用链”的分析流程。各小节按顺序接续：先创建环境，再注册回调和装载目标，最后下断点、调用并采集 trace。示例中的 `libfoo.so`、`target_fn` 和 guest 路径要换成目标实际使用的值。
+
+### 补设备画像与虚拟文件
+
+`AndroidEnvProfile` 在创建 session 时固定设备信息；`emu.fs.map_file` 则把指定字节映射到 guest 路径，目标的 `open/read` 会读到这份内容。
 
 ```python
 from rundroid import AndroidEnvProfile, CpuContext, Emulator, Interceptor, VirtFile
@@ -79,30 +83,69 @@ profile = AndroidEnvProfile.from_mapping({
     "syscall": {"cwd": "/data/local/tmp", "pid": 1234},
 })
 emu = Emulator("arm64", "unicorn", 42, profile=profile)
-
-# guest 的 open/read 会读取这份内存文件，而不是宿主的 /proc。
 emu.fs.map_file(
     "/proc/self/status",
     VirtFile.bytes(b"Name:\ttarget\nPid:\t1234\n"),
 )
+```
 
+虚拟文件还可以用 `VirtFile.host(...)` 显式映射宿主文件，或用动态 provider 生成内容；guest 路径与宿主路径是两套命名空间。
+
+### 用 Python 补 Java 方法
+
+Java shim 声明的是 guest 能找到的 class 和方法，方法行为由 Python 提供；注册要发生在目标使用该 class 之前。
+
+```python
+from rundroid.javashim import JavaClass, java_class, java_method
+
+@java_class("com/example/DeviceInfo")
+class DeviceInfo(JavaClass):
+    @java_method("model()Ljava/lang/String;", static=True)
+    def model() -> str:
+        """向 guest 的 Java 调用返回设备型号。"""
+        return "Pixel 7"
+
+emu.art.register([DeviceInfo])
+```
+
+### Libc interposer：在真实入口观察调用
+
+先注册、后装载。这里观察 `strlen` 的参数并返回 `False`，让真实 libc 函数继续执行；constructor 中首次调用也能命中。
+
+```python
 @Interceptor.libc("strlen")
 def on_strlen(cpu: CpuContext) -> bool:
-    """在真实 libc 入口观察字符串，继续执行原函数。"""
+    """读取 guest 传给 strlen 的字符串。"""
     print("strlen input:", cpu.cdt.read_utf8("x0"))
     return False
 
-# libc interposer 必须在首次 load 之前注册，constructor 中的调用也会命中。
 emu.interceptor.register([on_strlen])
 module = emu.load("libfoo.so")
+```
 
+若要替换返回值，在回调中调用 `cpu.cdt.set_retval(value)` 并返回 `True`。libc interposer 必须在首次 `load` 前注册。
+
+### 断点：查看现场并改写参数
+
+`breakpoint.add` 可以按导出符号或绝对地址下断点。回调里的 `CpuContext` 能读写 ARM64 寄存器，也能通过 `cpu.cdt` 查看内存、栈和 JNI 对象；它只在本次回调内有效。
+
+```python
 def on_target(cpu: CpuContext, address: int) -> bool:
-    """在 native 入口查看并修改第一个 ARM64 参数。"""
+    """命中 native 入口时读取现场，并改写第一个参数。"""
     print(f"hit {address:#x}, x0={cpu.regs.x0:#x}")
     cpu.regs.x0 = 42
     return True
 
-emu.breakpoint.add("target_fn", on_target)
+handle = emu.breakpoint.add("target_fn", on_target)
+print(emu.call("target_fn", 1, 2))
+emu.breakpoint.remove(handle)
+```
+
+### Trace：只记录目标函数
+
+trace scope 只覆盖 `with` 内的 guest 执行；按符号选范围，并把结果写到文件，避免全程指令输出淹没关键信息。
+
+```python
 with emu.trace_symbol(
     module,
     "target_fn",
@@ -113,7 +156,25 @@ with emu.trace_symbol(
 emu.close()
 ```
 
-`return False` 让 `strlen` 从真实首指令继续执行；若要替换结果，在回调中调用 `cpu.cdt.set_retval(...)` 并返回 `True`。断点里的 `CpuContext` 只在当前回调有效。虚拟文件也可由 `VirtFile.host(...)` 指向显式授权的宿主文件，或用动态 provider 按需生成内容。
+### Guest 线程：查看与冻结子线程
+
+线程调度需要在创建新 session 时启用。目标运行 `clone` 后，主调用返回到 host，才能查询或冻结仍存活的 guest 子线程；冻结只改变后续 guest 调度资格。
+
+```python
+thread_emu = Emulator("arm64", "unicorn", 42, profile=profile, thread_scheduler=True)
+thread_emu.load("libthreaded.so")
+thread_emu.call("start_worker")  # 示例：目标函数创建子线程后返回
+
+for task in thread_emu.thread_scheduler_snapshot().threads:
+    if task.is_main:
+        continue
+    print(task.tid, task.state, task.frozen)
+    thread_emu.threads.freeze(task.tid)
+    print(thread_emu.threads[task.tid])
+    thread_emu.threads.unfreeze(task.tid)
+
+thread_emu.close()
+```
 
 ## Rust 核心怎样协同
 
@@ -144,17 +205,23 @@ rundroid-fetch-system-libs download
 
 当前 guest 固定为 **Android ARM64 / API 33**。APK 提供 native 库、manifest、签名证书和 assets；rundroid 不执行 DEX 字节码，也不是完整 Android 系统。单一 base APK 可在构造 `Emulator(..., apk="base.apk")` 时绑定。
 
-## 深入使用
+## 安装 rundroid-python Skill
 
-- [Python 使用 Skill](skills/rundroid-python/SKILL.md)：从 Java shim、JNI 到拦截、调试和真实脚本的任务索引。
-- [安装与升级](docs/install.md) · [wheel 内容](docs/artifacts.md) · [guest runtime 资源](docs/runtime-assets.md)。
-- [源码仓库](https://github.com/Lerr1uqs/rundroid) · [反馈问题](https://github.com/Lerr1uqs/rundroid-release/issues)。
+`rundroid-python` 是给支持 Skills 的编码工具使用的脚本编写指南，涵盖资源准备、Java shim、JNI、断点、trace 与补环境。它与 rundroid wheel 是两项独立安装内容。
 
-也可以安装 Skill，让支持 Skill 的工具按 rundroid 的公开 API 辅助写脚本：
+已安装 Node.js/npm 时，在你编写 rundroid 脚本的项目目录运行：
 
 ```bash
 npx skills add https://github.com/Lerr1uqs/rundroid-release/tree/main/skills/rundroid-python
+npx skills list
 ```
+
+安装命令会检测编码工具，并在需要时提示选择目标；默认安装在当前项目。要在所有项目中使用，给 `add` 加 `-g`，并用 `npx skills ls -g` 查看。安装后可在支持显式调用的工具中说“使用 `$rundroid-python` 帮我编写一个带 JNI 断点的分析脚本”。安装方式详见 [Skills CLI 文档](https://github.com/vercel-labs/skills/blob/main/docs/commands.md)，具体能力见本仓库的 [Skill 说明](skills/rundroid-python/SKILL.md)。
+
+## 深入使用
+
+- [安装与升级](docs/install.md) · [wheel 内容](docs/artifacts.md) · [guest runtime 资源](docs/runtime-assets.md)。
+- [源码仓库](https://github.com/Lerr1uqs/rundroid) · [反馈问题](https://github.com/Lerr1uqs/rundroid-release/issues)。
 
 ## 许可证
 
