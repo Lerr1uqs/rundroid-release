@@ -1,60 +1,95 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" role="img" aria-labelledby="title desc">
-  <title id="title">rundroid 结构</title>
-  <desc id="desc">Python 脚本通过 rundroid 的 Python API、JNI/Java shim 层和 Unicorn ARM64 guest runtime 加载并调用 libfoo.so、APK native 和系统 .so。</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">rundroid 架构：Python 定义环境，Rust 执行 Android ARM64 native</title>
+  <desc id="desc">Python 脚本通过 PyO3 配置 Java shim、设备环境、拦截和调试。Rust 核心处理 ELF 链接、Android syscall、ART/JNI 与 Unicorn ARM64 执行，运行 APK 或独立 so 的 native 代码，并向 Python 返回结果、事件、trace 和 crashdump。</desc>
   <defs>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
-    </marker>
     <style>
-      .title{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:24px;font-weight:700;fill:#0f172a}
-      .sub{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:13px;fill:#475569}
-      .h{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:17px;font-weight:700;fill:#0f172a}
-      .t{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:12px;fill:#334155}
-      .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace,'PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:11px;fill:#1e293b}
-      .lbl{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:11px;font-weight:600;fill:#475569}
-      .arrow{stroke:#475569;stroke-width:2;fill:none;marker-end:url(#arrow)}
+      .base{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+      .mono{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace}
+      .hero{font-size:31px;font-weight:750;fill:#f8fafc}
+      .subtitle{font-size:16px;fill:#aab9cc}
+      .eyebrow{font-size:13px;font-weight:700;letter-spacing:1.2px}
+      .heading{font-size:22px;font-weight:720;fill:#f8fafc}
+      .body{font-size:15px;fill:#cfdbeb}
+      .small{font-size:13px;fill:#9fb0c7}
+      .chip{font-size:14px;font-weight:650;fill:#e7eef8}
+      .output{font-size:16px;font-weight:650;fill:#eff6ff}
     </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#67e8f9"/>
+    </marker>
+    <marker id="arrow-back" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M10 0 L0 5 L10 10 Z" fill="#67e8f9"/>
+    </marker>
   </defs>
-  <rect width="1000" height="520" fill="#f8fafc"/>
-  <text x="40" y="48" class="title">rundroid 是什么</text>
-  <text x="40" y="74" class="sub">用 Python 加载并调用 Android ARM64 native 代码；Java shim、JNI、hook、断点和 trace 都在同一层完成。</text>
 
-  <rect x="40" y="120" width="250" height="200" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="62" y="152" class="h">Python 脚本</text>
-  <text x="62" y="184" class="mono">from rundroid import Emulator</text>
-  <text x="62" y="206" class="mono">emu = Emulator(...,</text>
-  <text x="62" y="224" class="mono">    profile=profile)</text>
-  <text x="62" y="248" class="mono">emu.load("libfoo.so")</text>
-  <text x="62" y="270" class="mono">emu.call("target_fn", 1, 2)</text>
-  <text x="62" y="300" class="t">普通 Python，无需真机</text>
+  <!-- 顶部先说明两层分工，再展示组件。 -->
+  <rect width="1200" height="630" rx="22" fill="#0b1220"/>
+  <text class="base hero" x="38" y="57">Python 定义环境 · Rust 负责执行</text>
+  <text class="base subtitle" x="39" y="87">同一进程内，把 Android native 调用变成可编排、可观察的脚本流程</text>
 
-  <rect x="370" y="100" width="300" height="240" rx="14" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
-  <text x="392" y="132" class="h">rundroid</text>
-  <rect x="392" y="150" width="256" height="42" rx="8" fill="#ffffff" stroke="#bfdbfe"/>
-  <text x="406" y="176" class="t">Python API + 类型存根</text>
-  <rect x="392" y="202" width="256" height="42" rx="8" fill="#ffffff" stroke="#bfdbfe"/>
-  <text x="406" y="228" class="t">Java shim · JNI · hook · debug</text>
-  <rect x="392" y="254" width="256" height="42" rx="8" fill="#ffffff" stroke="#bfdbfe"/>
-  <text x="406" y="280" class="t">Unicorn ARM64 · bionic · linker</text>
-  <text x="392" y="320" class="t">全程在 Python 进程内运行</text>
+  <!-- Python 控制面：脚本决定 guest 看见什么、在哪里停下。 -->
+  <rect x="38" y="126" width="300" height="382" rx="18" fill="#142238" stroke="#4379a8" stroke-width="1.5"/>
+  <rect x="57" y="145" width="74" height="26" rx="13" fill="#153d59"/>
+  <text class="base eyebrow" x="71" y="163" fill="#7dd3fc">CONTROL</text>
+  <text class="base heading" x="58" y="206">Python 脚本</text>
+  <text class="base small" x="58" y="230">输入、补环境、现场控制</text>
+  <rect x="58" y="251" width="260" height="49" rx="9" fill="#1c334c"/>
+  <text class="base chip" x="74" y="281">Java shim / method interceptor</text>
+  <rect x="58" y="309" width="260" height="49" rx="9" fill="#1c334c"/>
+  <text class="base chip" x="74" y="339">设备 Profile / 虚拟文件与设备</text>
+  <rect x="58" y="367" width="260" height="49" rx="9" fill="#1c334c"/>
+  <text class="base chip" x="74" y="397">断点 / watchpoint / syscall hook</text>
+  <rect x="58" y="425" width="260" height="49" rx="9" fill="#1c334c"/>
+  <text class="base chip" x="74" y="455">trace / 内存与 JNI inspection</text>
 
-  <rect x="745" y="120" width="215" height="200" rx="14" fill="#ecfdf5" stroke="#86efac" stroke-width="1.5"/>
-  <text x="767" y="152" class="h">Guest</text>
-  <text x="767" y="184" class="mono">libfoo.so</text>
-  <text x="767" y="208" class="mono">APK native</text>
-  <text x="767" y="232" class="mono">/system/lib64/*.so</text>
-  <text x="767" y="264" class="t">ARM64 · Android</text>
-  <text x="767" y="284" class="t">受控内存与线程</text>
+  <!-- PyO3 边界双向工作：Python 发起执行，Rust 命中时回调脚本。 -->
+  <path d="M345 318 H378" stroke="#67e8f9" stroke-width="2.5" marker-start="url(#arrow-back)" marker-end="url(#arrow)"/>
+  <text class="base small mono" x="345" y="296" fill="#67e8f9">PyO3</text>
 
-  <path d="M290 220 L363 220" class="arrow"/>
-  <text x="302" y="207" class="lbl">load / call</text>
-  <path d="M670 220 L738 220" class="arrow"/>
-  <text x="682" y="207" class="lbl">ARM64</text>
+  <!-- Rust 执行面：装载、系统语义、JNI 与 CPU 在核心层协同。 -->
+  <rect x="384" y="126" width="508" height="382" rx="18" fill="#162836" stroke="#4c9a95" stroke-width="1.5"/>
+  <rect x="404" y="145" width="81" height="26" rx="13" fill="#164940"/>
+  <text class="base eyebrow" x="419" y="163" fill="#6ee7b7">RUNTIME</text>
+  <text class="base heading" x="405" y="206">Rust 执行核心</text>
+  <text class="base small" x="405" y="230">固定 Android 13 / API 33 · ARM64 guest</text>
+  <rect x="405" y="252" width="223" height="96" rx="10" fill="#1e3b44"/>
+  <text class="base chip" x="421" y="283">ELF loader + linker</text>
+  <text class="base small" x="421" y="311">依赖、重定位、constructor</text>
+  <rect x="647" y="252" width="223" height="96" rx="10" fill="#1e3b44"/>
+  <text class="base chip" x="663" y="283">Android kernel</text>
+  <text class="base small" x="663" y="311">syscall、文件、线程、信号</text>
+  <rect x="405" y="362" width="223" height="96" rx="10" fill="#1e3b44"/>
+  <text class="base chip" x="421" y="393">ART / JNI bridge</text>
+  <text class="base small" x="421" y="421">Java 引用与 native 编组</text>
+  <rect x="647" y="362" width="223" height="96" rx="10" fill="#1e3b44"/>
+  <text class="base chip" x="663" y="393">Unicorn ARM64</text>
+  <text class="base small" x="663" y="421">CPU、guest 内存与 code hook</text>
 
-  <rect x="40" y="390" width="920" height="100" rx="14" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.5"/>
-  <text x="64" y="420" class="h">两步开始</text>
-  <text x="64" y="446" class="mono">1. uv add "rundroid @ &lt;wheel URL&gt;"</text>
-  <text x="64" y="468" class="mono">2. rundroid-fetch-system-libs download</text>
-  <text x="560" y="446" class="t">之后就可以 load / call、注册 Java shim、</text>
-  <text x="560" y="466" class="t">下断点或打开 trace。</text>
+  <!-- Guest 是被仿真的目标地址空间，并非另起 Android 进程。 -->
+  <path d="M899 318 H932" stroke="#67e8f9" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="938" y="126" width="224" height="382" rx="18" fill="#25273d" stroke="#9b83b7" stroke-width="1.5"/>
+  <rect x="958" y="145" width="62" height="26" rx="13" fill="#443454"/>
+  <text class="base eyebrow" x="971" y="163" fill="#d8b4fe">GUEST</text>
+  <text class="base heading" x="958" y="206">Android native</text>
+  <text class="base small" x="958" y="230">被分析的目标与依赖</text>
+  <rect x="958" y="252" width="184" height="58" rx="9" fill="#36334b"/>
+  <text class="base chip mono" x="974" y="286">APK / libfoo.so</text>
+  <rect x="958" y="320" width="184" height="58" rx="9" fill="#36334b"/>
+  <text class="base chip mono" x="974" y="354">/system/lib64</text>
+  <text class="base body" x="958" y="424">真实 ARM64 指令</text>
+  <text class="base small" x="958" y="450">在受控 guest 中运行</text>
+
+  <!-- 执行结果回到脚本，形成分析闭环。 -->
+  <path d="M638 509 V537" stroke="#67e8f9" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="38" y="546" width="1124" height="58" rx="12" fill="#12354a" stroke="#287a94"/>
+  <text class="base eyebrow" x="59" y="581" fill="#67e8f9">OUTPUT</text>
+  <text class="base output" x="151" y="582">native 返回值</text>
+  <circle cx="333" cy="576" r="3" fill="#67e8f9"/>
+  <text class="base output" x="350" y="582">GuestEvent</text>
+  <circle cx="518" cy="576" r="3" fill="#67e8f9"/>
+  <text class="base output" x="535" y="582">指令 trace</text>
+  <circle cx="696" cy="576" r="3" fill="#67e8f9"/>
+  <text class="base output" x="713" y="582">crashdump</text>
+  <circle cx="875" cy="576" r="3" fill="#67e8f9"/>
+  <text class="base output" x="892" y="582">Python 后续分析</text>
 </svg>
