@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" role="img" aria-labelledby="title desc">
+  <title id="title">rundroid 结构</title>
+  <desc id="desc">Python 脚本通过 rundroid 的 Python API、JNI/Java shim 层和 Unicorn ARM64 guest runtime 加载并调用 libfoo.so、APK native 和系统 .so。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <style>
+      .title{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:24px;font-weight:700;fill:#0f172a}
+      .sub{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:13px;fill:#475569}
+      .h{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:17px;font-weight:700;fill:#0f172a}
+      .t{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:12px;fill:#334155}
+      .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace,'PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:11px;fill:#1e293b}
+      .lbl{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:11px;font-weight:600;fill:#475569}
+      .arrow{stroke:#475569;stroke-width:2;fill:none;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1000" height="520" fill="#f8fafc"/>
+  <text x="40" y="48" class="title">rundroid 是什么</text>
+  <text x="40" y="74" class="sub">用 Python 加载并调用 Android ARM64 native 代码；Java shim、JNI、hook、断点和 trace 都在同一层完成。</text>
+
+  <rect x="40" y="120" width="250" height="200" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="62" y="152" class="h">Python 脚本</text>
+  <text x="62" y="184" class="mono">from rundroid import Emulator</text>
+  <text x="62" y="206" class="mono">emu = Emulator(...,</text>
+  <text x="62" y="224" class="mono">    profile=profile)</text>
+  <text x="62" y="248" class="mono">emu.load("libfoo.so")</text>
+  <text x="62" y="270" class="mono">emu.call("target_fn", 1, 2)</text>
+  <text x="62" y="300" class="t">普通 Python，无需真机</text>
+
+  <rect x="370" y="100" width="300" height="240" rx="14" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="392" y="132" class="h">rundroid</text>
+  <rect x="392" y="150" width="256" height="42" rx="8" fill="#ffffff" stroke="#bfdbfe"/>
+  <text x="406" y="176" class="t">Python API + 类型存根</text>
+  <rect x="392" y="202" width="256" height="42" rx="8" fill="#ffffff" stroke="#bfdbfe"/>
+  <text x="406" y="228" class="t">Java shim · JNI · hook · debug</text>
+  <rect x="392" y="254" width="256" height="42" rx="8" fill="#ffffff" stroke="#bfdbfe"/>
+  <text x="406" y="280" class="t">Unicorn ARM64 · bionic · linker</text>
+  <text x="392" y="320" class="t">全程在 Python 进程内运行</text>
+
+  <rect x="745" y="120" width="215" height="200" rx="14" fill="#ecfdf5" stroke="#86efac" stroke-width="1.5"/>
+  <text x="767" y="152" class="h">Guest</text>
+  <text x="767" y="184" class="mono">libfoo.so</text>
+  <text x="767" y="208" class="mono">APK native</text>
+  <text x="767" y="232" class="mono">/system/lib64/*.so</text>
+  <text x="767" y="264" class="t">ARM64 · Android</text>
+  <text x="767" y="284" class="t">受控内存与线程</text>
+
+  <path d="M290 220 L363 220" class="arrow"/>
+  <text x="302" y="207" class="lbl">load / call</text>
+  <path d="M670 220 L738 220" class="arrow"/>
+  <text x="682" y="207" class="lbl">ARM64</text>
+
+  <rect x="40" y="390" width="920" height="100" rx="14" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.5"/>
+  <text x="64" y="420" class="h">两步开始</text>
+  <text x="64" y="446" class="mono">1. uv add "rundroid @ &lt;wheel URL&gt;"</text>
+  <text x="64" y="468" class="mono">2. rundroid-fetch-system-libs download</text>
+  <text x="560" y="446" class="t">之后就可以 load / call、注册 Java shim、</text>
+  <text x="560" y="466" class="t">下断点或打开 trace。</text>
+</svg>

@@ -13,6 +13,7 @@
 │   ├── release-process.md
 │   ├── repository-layout.md
 │   └── diagrams/
+│       ├── overview.svg
 │       ├── install-flow.svg
 │       ├── wheel-contents.svg
 │       ├── runtime-assets-flow.svg
@@ -47,11 +48,12 @@ release 仓库会被单独 clone，也会被 GitHub 直接渲染。因此：
 推荐在**主仓库**里加一个同步脚本或 GitHub Action，在发版时把公开内容复制到本仓库：
 
 ```text
-main repo: docs/release/**  +  skills/rundroid-python/**
-        └── sync (CI / script) ──► rundroid-release: docs/**, skills/**
+main repo: docs/release/**（如果将来需要）
+        └── sync (CI / script) ──► rundroid-release: docs/**
 ```
 
-复制而不是 symlink，原因同上：消费者和 GitHub 看到的是真实文件。
+复制而不是 symlink，原因同上：消费者和 GitHub 看到的是真实文件。`rundroid-python`
+skill 以本仓库为权威副本，不再从主仓库同步。
 
 ## 子模块的适用场景
 
@@ -66,14 +68,15 @@ git submodule add https://github.com/Lerr1uqs/rundroid-release.git release
 
 ## skill 的发布
 
-`skills/rundroid-python` 是面向使用者的 skill，不含源码，可以公开。本仓库保留一份副本：
+`rundroid-python` 是面向使用者的 skill，不含源码。它的权威副本在本仓库：
 
 ```bash
 npx skills add https://github.com/Lerr1uqs/rundroid-release/tree/main/skills/rundroid-python
 ```
 
-如果主仓库的 skill 有更新，发版时重新复制并提交。注意：skill 里的源码仓库命令
-（如 `uv run --no-project`）仅适用于开发；wheel 使用者直接使用 console scripts。
+主仓库不再保存 `rundroid-python` 实体；更新 skill 时直接修改本仓库并提交。注意：skill
+里的源码仓库命令（如 `uv run --no-project`）仅适用于开发；wheel 使用者直接使用
+console scripts。
 
 ## 资产放在哪里
 
