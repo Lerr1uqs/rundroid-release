@@ -1,0 +1,4 @@
+interface:
+  display_name: "Rundroid Python"
+  short_description: "Prepare Rundroid resources and write Python cases"
+  default_prompt: "Use $rundroid-python to prepare resources or write Python scripts for Android ARM64 emulation."

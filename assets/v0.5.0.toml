@@ -1,0 +1,17 @@
+schema = 1
+kind = "python-wheel"
+version = "0.5.0"
+
+# 历史版本：resource CLI 缺少 runtime lock，不要用于新安装。
+filename = "rundroid-0.5.0-cp313-cp313-manylinux_2_34_x86_64.whl"
+url = "https://github.com/Lerr1uqs/rundroid-release/releases/download/v0.5.0/rundroid-0.5.0-cp313-cp313-manylinux_2_34_x86_64.whl"
+sha256 = "c26d329a3812b1477ea4b5cadceb22093c46063fcad5403b98324a4e9e555fe0"
+size = 9748783
+
+requires_python = ">=3.13,<3.14"
+python_tag = "cp313"
+abi_tag = "cp313"
+platform_tag = "manylinux_2_34_x86_64"
+host_os = "linux"
+host_arch = "x86_64"
+glibc = ">=2.34"

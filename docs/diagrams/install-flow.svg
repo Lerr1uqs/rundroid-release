@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="440" viewBox="0 0 1000 440" role="img" aria-labelledby="title desc">
+  <title id="title">rundroid wheel 直链安装流程</title>
+  <desc id="desc">消费者项目通过 uv add 使用 GitHub Releases 的 wheel 直链；uv 写入 tool.uv.sources；wheel 安装 native 扩展、Python 接口、类型存根和 CLI。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <style>
+      .title{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:24px;font-weight:700;fill:#0f172a}
+      .sub{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:13px;fill:#475569}
+      .h{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:17px;font-weight:700;fill:#0f172a}
+      .t{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:12px;fill:#334155}
+      .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace,'PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:11px;fill:#1e293b}
+      .lbl{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:11px;font-weight:600;fill:#475569}
+      .arrow{stroke:#475569;stroke-width:2;fill:none;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1000" height="440" fill="#f8fafc"/>
+  <text x="40" y="48" class="title">直链安装：uv add + GitHub Releases</text>
+  <text x="40" y="74" class="sub">一个 wheel 同时提供 native 扩展、Python 接口、类型存根和命令行工具。</text>
+
+  <rect x="40" y="110" width="270" height="170" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="64" y="145" class="h">消费者项目</text>
+  <text x="64" y="178" class="mono">pyproject.toml</text>
+  <text x="64" y="204" class="mono">uv add "rundroid @ &lt;wheel URL&gt;"</text>
+  <text x="64" y="230" class="t">uv.lock 固定 URL 和产物</text>
+  <text x="64" y="256" class="t">升级 = 替换 URL 后重新 add</text>
+
+  <rect x="365" y="110" width="270" height="170" rx="14" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="389" y="145" class="h">GitHub Releases</text>
+  <text x="389" y="178" class="mono">Lerr1uqs/rundroid-release</text>
+  <text x="389" y="204" class="mono">rundroid-0.5.1-...whl</text>
+  <text x="389" y="230" class="mono">rundroid-0.5.1-...whl.sha256</text>
+  <text x="389" y="256" class="t">不可变资产，同名不覆盖</text>
+
+  <rect x="690" y="110" width="270" height="170" rx="14" fill="#ecfdf5" stroke="#86efac" stroke-width="1.5"/>
+  <text x="714" y="145" class="h">项目 .venv</text>
+  <text x="714" y="178" class="mono">rundroid/_rundroid*.so</text>
+  <text x="714" y="204" class="mono">rundroid/*.py + _rundroid.pyi</text>
+  <text x="714" y="230" class="mono">rundroid-fetch-* scripts</text>
+  <text x="714" y="256" class="t">import rundroid 即可使用</text>
+
+  <path d="M310 195 L358 195" class="arrow"/>
+  <text x="318" y="182" class="lbl">直链</text>
+  <path d="M635 195 L683 195" class="arrow"/>
+  <text x="643" y="182" class="lbl">安装</text>
+
+  <rect x="40" y="325" width="920" height="80" rx="14" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.5"/>
+  <text x="64" y="356" class="h">锁定式安装，不是 latest</text>
+  <text x="64" y="382" class="t">wheel 文件名必须带版本号，所以直链会随版本变化。需要“跟随最新”时应使用 PEP 503 索引或 find-links 页面。</text>
+</svg>

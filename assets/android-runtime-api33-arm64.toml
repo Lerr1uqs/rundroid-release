@@ -1,0 +1,15 @@
+schema = 1
+kind = "runtime-image"
+asset_id = "android-runtime-api33-arm64"
+version = "TQ1A.230205.001.D2-9471403"
+release_tag = "android-runtime-api33-arm64-TQ1A.230205.001.D2-9471403"
+
+filename = "android-runtime-api33-arm64-TQ1A.230205.001.D2-9471403.zip"
+url = "https://github.com/Lerr1uqs/rundroid-release/releases/download/android-runtime-api33-arm64-TQ1A.230205.001.D2-9471403/android-runtime-api33-arm64-TQ1A.230205.001.D2-9471403.zip"
+bundle_sha256 = "927b47236dfb91d580d98ab1e8293f4cbdb9aa430020da504692cdc8f6c62a5e"
+manifest_sha256 = "6b6cff8c8b2a82a4e95018e8c9ec1f31eac27039e6b593fb04a28c10d05cdeeb"
+size = 3336792
+
+guest_os = "android"
+guest_api_level = 33
+guest_arch = "arm64"

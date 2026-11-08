@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="460" viewBox="0 0 1000 460" role="img" aria-labelledby="title desc">
+  <title id="title">rundroid wheel 内部结构</title>
+  <desc id="desc">wheel 包含 native 扩展、Python 接口层、类型存根、runtime CLI 和 runtime lock；不包含 Rust 源码、test fixtures、runtime image ZIP 或其他平台二进制。</desc>
+  <defs>
+    <style>
+      .title{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:24px;font-weight:700;fill:#0f172a}
+      .sub{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:13px;fill:#475569}
+      .h{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:17px;font-weight:700;fill:#0f172a}
+      .t{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:12px;fill:#334155}
+      .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace,'PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:11px;fill:#1e293b}
+    </style>
+  </defs>
+  <rect width="1000" height="460" fill="#f8fafc"/>
+  <text x="40" y="48" class="title">一个 wheel = 二进制 + Python 接口 + SDK</text>
+  <text x="40" y="74" class="sub">v0.5.1 · CPython 3.13 · Linux x86_64 · manylinux_2_34</text>
+
+  <rect x="40" y="100" width="600" height="300" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="64" y="134" class="mono">rundroid-0.5.1-cp313-cp313-manylinux_2_34_x86_64.whl · 9.7 MB</text>
+
+  <rect x="64" y="155" width="552" height="42" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="80" y="172" class="mono">rundroid/_rundroid.cpython-313-x86_64-linux-gnu.so</text>
+  <text x="80" y="188" class="t">native 扩展（Rust 编译产物，strip 后约 31 MB）</text>
+
+  <rect x="64" y="205" width="552" height="42" rx="8" fill="#ecfdf5" stroke="#bbf7d0"/>
+  <text x="80" y="222" class="mono">rundroid/*.py</text>
+  <text x="80" y="238" class="t">Python 接口 / stub 层</text>
+
+  <rect x="64" y="255" width="552" height="42" rx="8" fill="#f5f3ff" stroke="#ddd6fe"/>
+  <text x="80" y="272" class="mono">rundroid/_rundroid.pyi + py.typed</text>
+  <text x="80" y="288" class="t">类型存根（SDK）</text>
+
+  <rect x="64" y="305" width="552" height="42" rx="8" fill="#fffbeb" stroke="#fde68a"/>
+  <text x="80" y="322" class="mono">rundroid_resource_cli/ + 4 个 console scripts</text>
+  <text x="80" y="338" class="t">runtime 资源准备工具</text>
+
+  <rect x="64" y="355" width="552" height="30" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="80" y="375" class="mono">.../resources/runtime-assets.lock.toml</text>
+
+  <rect x="680" y="100" width="280" height="300" rx="14" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5"/>
+  <text x="704" y="134" class="h">不包含</text>
+  <text x="704" y="170" class="t">• Rust 源码</text>
+  <text x="704" y="200" class="t">• test-assets lock / fixtures</text>
+  <text x="704" y="230" class="t">• runtime image ZIP</text>
+  <text x="704" y="260" class="t">• 其他平台二进制</text>
+  <text x="704" y="312" class="t">发行包里只有编译产物</text>
+  <text x="704" y="332" class="t">和 Python 接口层。</text>
+
+  <rect x="40" y="415" width="920" height="30" rx="8" fill="#fffbeb" stroke="#fcd34d"/>
+  <text x="64" y="435" class="t">test-assets lock 仅用于源码仓库测试；发行包只打包 runtime-assets lock。</text>
+</svg>

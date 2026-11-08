@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="450" viewBox="0 0 1100 450" role="img" aria-labelledby="title desc">
+  <title id="title">rundroid 二进制发布流程</title>
+  <desc id="desc">源码工作区通过 maturin 构建 stripped manylinux_2_34 wheel，生成 sha256，在干净环境验证后，用 gh release create 发布到 rundroid-release。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <style>
+      .title{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:24px;font-weight:700;fill:#0f172a}
+      .sub{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:13px;fill:#475569}
+      .h{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:15px;font-weight:700;fill:#0f172a}
+      .t{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:11.5px;fill:#334155}
+      .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace,'PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:10px;fill:#1e293b}
+      .arrow{stroke:#475569;stroke-width:2;fill:none;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1100" height="450" fill="#f8fafc"/>
+  <text x="40" y="48" class="title">发布流程：源码 → wheel → 不可变 release 资产</text>
+  <text x="40" y="74" class="sub">源码不进入 wheel；发布前必须在干净 uv 项目中用公共 URL 安装验证。</text>
+
+  <rect x="20" y="110" width="190" height="180" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="38" y="142" class="h">源码工作区</text>
+  <text x="38" y="170" class="mono">python/pyproject.toml</text>
+  <text x="38" y="188" class="mono">version = "0.5.1"</text>
+  <text x="38" y="216" class="t">不发布 Rust 源码</text>
+  <text x="38" y="236" class="t">uv.lock 同步版本</text>
+
+  <rect x="235" y="110" width="190" height="180" rx="14" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="253" y="142" class="h">构建</text>
+  <text x="253" y="170" class="mono">maturin build</text>
+  <text x="253" y="188" class="mono">--release --strip</text>
+  <text x="253" y="206" class="mono">--compatibility</text>
+  <text x="253" y="224" class="mono">manylinux_2_34</text>
+  <text x="253" y="252" class="t">.so 183 MB → 31 MB</text>
+
+  <rect x="450" y="110" width="190" height="180" rx="14" fill="#ecfdf5" stroke="#86efac" stroke-width="1.5"/>
+  <text x="468" y="142" class="h">校验</text>
+  <text x="468" y="170" class="mono">wheel 内容检查</text>
+  <text x="468" y="188" class="mono">sha256sum</text>
+  <text x="468" y="216" class="t">干净 uv 项目安装</text>
+  <text x="468" y="236" class="t">import + CLI smoke</text>
+
+  <rect x="665" y="110" width="190" height="180" rx="14" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.5"/>
+  <text x="683" y="142" class="h">上传</text>
+  <text x="683" y="170" class="mono">gh release create</text>
+  <text x="683" y="188" class="mono">v&lt;version&gt;</text>
+  <text x="683" y="216" class="t">wheel + .sha256</text>
+  <text x="683" y="236" class="t">不覆盖同名资产</text>
+
+  <rect x="880" y="110" width="200" height="180" rx="14" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5"/>
+  <text x="898" y="142" class="h">rundroid-release</text>
+  <text x="898" y="170" class="mono">releases/download/</text>
+  <text x="898" y="188" class="mono">v&lt;version&gt;/...</text>
+  <text x="898" y="216" class="t">wheel 资产</text>
+  <text x="898" y="236" class="t">独立 runtime 资产</text>
+
+  <path d="M210 200 L228 200" class="arrow"/>
+  <path d="M425 200 L443 200" class="arrow"/>
+  <path d="M640 200 L658 200" class="arrow"/>
+  <path d="M855 200 L873 200" class="arrow"/>
+
+  <rect x="20" y="330" width="1060" height="90" rx="14" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="44" y="360" class="h">发布规则</text>
+  <text x="44" y="386" class="t">修复发布问题必须 bump 版本；同名资产不覆盖重传。wheel release 用 <tspan class="mono">v&lt;version&gt;</tspan>，runtime image 用独立 asset tag。</text>
+  <text x="44" y="406" class="t">每个平台单独构建、单独验证；当前只有 Linux x86_64 / CPython 3.13 / glibc ≥ 2.34。</text>
+</svg>

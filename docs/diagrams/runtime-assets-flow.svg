@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="430" viewBox="0 0 1100 430" role="img" aria-labelledby="title desc">
+  <title id="title">runtime assets 准备流程</title>
+  <desc id="desc">使用者运行 rundroid-fetch-system-libs download；CLI 从 GitHub Releases 下载 runtime ZIP，校验 SHA-256 和 manifest，然后原子安装到用户缓存目录。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <style>
+      .title{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:24px;font-weight:700;fill:#0f172a}
+      .sub{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:13px;fill:#475569}
+      .h{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:16px;font-weight:700;fill:#0f172a}
+      .t{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:12px;fill:#334155}
+      .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace,'PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:10.5px;fill:#1e293b}
+      .lbl{font-family:ui-sans-serif,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC',sans-serif;font-size:11px;font-weight:600;fill:#475569}
+      .arrow{stroke:#475569;stroke-width:2;fill:none;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1100" height="430" fill="#f8fafc"/>
+  <text x="40" y="48" class="title">guest .so 运行环境：runtime assets</text>
+  <text x="40" y="74" class="sub">wheel 只带 CLI 和 lock；Android 13 / API 33 ARM64 的 runtime image 是独立 release 资产（约 3.3 MB）。</text>
+
+  <rect x="40" y="110" width="230" height="160" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="62" y="144" class="h">首次使用前</text>
+  <text x="62" y="174" class="mono">rundroid-fetch-system-libs</text>
+  <text x="62" y="192" class="mono">download</text>
+  <text x="62" y="222" class="t">等价：</text>
+  <text x="62" y="240" class="mono">rundroid-fetch-runtime-assets</text>
+
+  <rect x="300" y="110" width="230" height="160" rx="14" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="322" y="144" class="h">GitHub Releases</text>
+  <text x="322" y="174" class="mono">android-runtime-api33-</text>
+  <text x="322" y="192" class="mono">arm64-...zip</text>
+  <text x="322" y="222" class="t">3,336,792 bytes</text>
+  <text x="322" y="240" class="t">不可变 asset tag</text>
+
+  <rect x="560" y="110" width="230" height="160" rx="14" fill="#ecfdf5" stroke="#86efac" stroke-width="1.5"/>
+  <text x="582" y="144" class="h">校验</text>
+  <text x="582" y="174" class="t">bundle SHA-256</text>
+  <text x="582" y="194" class="t">manifest SHA-256</text>
+  <text x="582" y="214" class="t">逐文件 size / hash</text>
+  <text x="582" y="234" class="t">symlink / 路径守卫</text>
+
+  <rect x="820" y="110" width="240" height="160" rx="14" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.5"/>
+  <text x="842" y="144" class="h">用户缓存</text>
+  <text x="842" y="174" class="mono">~/.cache/rundroid/assets/</text>
+  <text x="842" y="192" class="mono">runtime/&lt;asset_id&gt;/</text>
+  <text x="842" y="210" class="mono">&lt;version&gt;/</text>
+  <text x="842" y="240" class="t">校验通过后原子发布</text>
+
+  <path d="M270 190 L293 190" class="arrow"/>
+  <path d="M530 190 L553 190" class="arrow"/>
+  <path d="M790 190 L813 190" class="arrow"/>
+
+  <rect x="40" y="305" width="1020" height="85" rx="14" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="64" y="335" class="h">只读命令 vs 唯一联网入口</text>
+  <text x="64" y="360" class="t"><tspan class="mono">check</tspan> 和 <tspan class="mono">print-root</tspan> 不联网、不写入；只有 <tspan class="mono">download</tspan> 会下载并写入缓存。</text>
+  <text x="64" y="380" class="t">emulator 之后从该缓存加载 guest <tspan class="mono">/system/lib64/*.so</tspan>；<tspan class="mono">RUNDROID_ASSETS_DIR</tspan> 可覆盖缓存根。</text>
+</svg>
