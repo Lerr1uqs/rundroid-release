@@ -9,10 +9,12 @@
 | `v0.5.0.toml` | 历史 wheel；resource CLI 缺少 runtime lock |
 | `android-runtime-api33-arm64.toml` | guest API 33 ARM64 runtime image |
 
-发版时新增一个 `v<version>.toml`，不要修改历史文件。校验示例：
+发版时新增一个 `v<version>.toml`，不要修改历史文件。
+
+校验时使用 Release 上的同名 `.sha256`：
 
 ```bash
-sha256sum -c <(jq -r '.filename + "  "' v0.5.1.toml)  # 需要先下载 wheel
+curl -LO "https://github.com/Lerr1uqs/rundroid-release/releases/download/v0.5.1/rundroid-0.5.1-cp313-cp313-manylinux_2_34_x86_64.whl"
+curl -LO "https://github.com/Lerr1uqs/rundroid-release/releases/download/v0.5.1/rundroid-0.5.1-cp313-cp313-manylinux_2_34_x86_64.whl.sha256"
+sha256sum -c rundroid-0.5.1-cp313-cp313-manylinux_2_34_x86_64.whl.sha256
 ```
-
-或直接使用随附的 `.sha256` 资产。
