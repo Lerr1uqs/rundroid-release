@@ -68,7 +68,7 @@ git submodule add https://github.com/Lerr1uqs/rundroid-release.git release
 
 ## skill 的发布
 
-`rundroid-python` 是面向使用者的 skill，不含源码。它的权威副本在本仓库：
+`rundroid-python` 是面向使用者的 skill。它的权威副本在本仓库：
 
 ```bash
 npx skills add https://github.com/Lerr1uqs/rundroid-release/tree/main/skills/rundroid-python
@@ -80,9 +80,9 @@ console scripts。
 
 ## 资产放在哪里
 
-wheel、runtime ZIP 和 `.sha256` 放在 **GitHub Releases**，不提交进 git：
+wheel 和 runtime ZIP 放在 **GitHub Releases**，不提交进 git：
 
 - 单文件上限 2 GiB；
 - 避免仓库膨胀；
 - 保持 release 资产的不可变性；
-- `assets/*.toml` 只记录元数据（URL、大小、SHA-256），不保存二进制。
+- `assets/*.toml` 只记录元数据（URL、大小），不保存二进制。

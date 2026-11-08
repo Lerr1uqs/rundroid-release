@@ -51,7 +51,6 @@ rundroid_resource_cli/
 
 ## 不包含
 
-- **Rust 源码**。wheel 只有编译产物和 Python 接口层。
 - **test fixtures**。`test-assets.lock.toml`、测试 APK、测试 `.so` 不在 wheel 中。
 - **runtime image ZIP**。guest `/system/lib64/*.so` 等通过 `rundroid-fetch-system-libs download`
   单独下载。
@@ -60,7 +59,7 @@ rundroid_resource_cli/
 ## 为什么 runtime lock 在 wheel 里，test lock 不在
 
 `rundroid-fetch-system-libs` 与 `rundroid-fetch-runtime-assets` 是同一实现，真实运行需要
-`runtime-assets.lock.toml` 来确定 runtime image 的 release URL、版本和 SHA-256。
+`runtime-assets.lock.toml` 来确定 runtime image 的 release URL 和版本。
 
 `test-assets.lock.toml` 只服务于源码仓库的测试 fixture（来自 `rundroid-test` Git LFS），
 普通使用者不需要。发行包只打包 runtime lock。

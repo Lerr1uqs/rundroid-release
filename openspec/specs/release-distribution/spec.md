@@ -3,7 +3,7 @@
 ## Purpose
 
 定义 rundroid 二进制发行仓库的发布契约：wheel 与 runtime image 的产物边界、平台标签、
-校验和、安装方式，以及文档的自包含性。源码仓库不发布 Rust 源码，本仓库只发布可安装产物。
+安装方式，以及文档的自包含性。本仓库只发布可安装产物。
 
 ## Requirements
 
@@ -27,7 +27,7 @@ MUST NOT 被同名覆盖；修复发布缺陷时 SHALL 递增版本。
 ### Requirement: Wheel is the complete Python install artifact
 
 wheel SHALL 包含编译后的 native 扩展、Python 接口层、类型存根、runtime 资源 CLI 与
-runtime lock；MUST NOT 包含 Rust 源码。
+runtime lock。
 
 #### Scenario: Import and typing work without a Rust toolchain
 
@@ -35,12 +35,6 @@ runtime lock；MUST NOT 包含 Rust 源码。
 - **THEN** native 扩展 SHALL 可直接加载
 - **AND** `rundroid/_rundroid.pyi` 与 `rundroid/py.typed` SHALL 提供类型信息
 - **AND** 安装过程 SHALL NOT 要求 Rust、cmake 或 ninja
-
-#### Scenario: Wheel does not expose source
-
-- **WHEN** 使用者解压 wheel
-- **THEN** 其中 SHALL 只有编译产物和 Python 接口层
-- **AND** SHALL NOT 包含 Rust 源码
 
 ### Requirement: Guest runtime image is a separate immutable asset
 
@@ -56,8 +50,8 @@ Android API 33 ARM64 runtime image SHALL 作为独立 release 资产发布，并
 #### Scenario: Runtime image integrity is verified before publication
 
 - **WHEN** `download` 安装 runtime image
-- **THEN** CLI SHALL 校验 bundle SHA-256、manifest SHA-256 和逐文件摘要
-- **AND** 只有全部校验通过后才原子发布缓存目录
+- **THEN** CLI SHALL 确认 bundle、manifest 和每个文件的完整性
+- **AND** 只有全部检查通过后才原子发布缓存目录
 
 ### Requirement: Wheel embeds runtime lock but excludes test fixtures
 
@@ -93,17 +87,6 @@ MUST NOT 打包 `test-assets.lock.toml` 或任何测试 fixture。
 - **THEN** 包管理器 SHALL 报告没有兼容的 wheel
 - **AND** 文档 SHALL 说明需要等待对应平台构建
 
-### Requirement: Checksums accompany every binary asset
-
-每个 wheel 与 runtime ZIP SHALL 提供 SHA-256 校验值。wheel 的校验值 SHALL 以同名
-`.sha256` 资产发布；runtime 的校验值 SHALL 固定在 lock 中并可在文档中复核。
-
-#### Scenario: User verifies a downloaded wheel
-
-- **WHEN** 使用者下载 wheel 和 `.sha256`
-- **THEN** `sha256sum -c` SHALL 通过
-- **AND** 文档 SHALL 给出该版本的摘要
-
 ### Requirement: Direct URL installation is pinned, not "latest"
 
 直链安装 SHALL 被视为锁定式安装。文档 MUST NOT 宣称直链会跟随最新版本；需要“跟随最新”时
@@ -128,11 +111,10 @@ SHALL 使用包索引或 find-links 页面。
 
 ### Requirement: Public skill is distributable without source
 
-面向使用者的 `rundroid-python` skill MAY 在本仓库公开；它 MUST 只描述使用方式，不包含源码。
+面向使用者的 `rundroid-python` skill MAY 在本仓库公开；它 MUST 只描述使用方式。
 
 #### Scenario: Install the skill from the release repository
 
 - **WHEN** 使用者执行
   `npx skills add https://github.com/Lerr1uqs/rundroid-release/tree/main/skills/rundroid-python`
 - **THEN** skill SHALL 提供 Python 使用方式、资源准备、JNI、调试和 trace 指引
-- **AND** SHALL NOT 要求访问 Rust 源码

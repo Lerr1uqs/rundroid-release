@@ -5,12 +5,12 @@
 这既要求源码可见，也把构建复杂度转移给了使用者。
 
 需要一条只发布二进制的路径：wheel 包含编译扩展、Python 接口层和类型存根，使用者用
-`uv add "<wheel URL>"` 即可安装。同时保持“不发布 Rust 源码”的边界。
+`uv add "<wheel URL>"` 即可安装。
 
 ## What Changes
 
 - 在 `Lerr1uqs/rundroid-release` 发布 Linux x86_64 / CPython 3.13 的 `rundroid` wheel：
-  `rundroid-0.5.1-cp313-cp313-manylinux_2_34_x86_64.whl` 及同名 `.sha256`。
+  `rundroid-0.5.1-cp313-cp313-manylinux_2_34_x86_64.whl`。
 - 修正 wheel 的 runtime 资源打包：把 `runtime-assets.lock.toml` 作为包数据放入
   `rundroid_resource_cli/resources/`，使 `rundroid-fetch-system-libs` 在没有源码 checkout 的
   环境也能工作；不打包 `test-assets.lock.toml`。
@@ -24,7 +24,7 @@
 
 ### New Capabilities
 
-- `release-distribution`：二进制发行产物的边界、不可变性、平台标签、校验和、直链安装和
+- `release-distribution`：二进制发行产物的边界、不可变性、平台标签、直链安装和
   文档自包含性。
 
 ### Modified Capabilities

@@ -58,20 +58,6 @@ wheel 文件名必须包含版本号（PEP 427），所以：
 
 需要“跟随最新”时，应使用包索引（PEP 503）或 find-links 页面，而不是直链。
 
-## 校验
-
-```bash
-curl -LO "https://github.com/Lerr1uqs/rundroid-release/releases/download/v0.5.1/rundroid-0.5.1-cp313-cp313-manylinux_2_34_x86_64.whl"
-curl -LO "https://github.com/Lerr1uqs/rundroid-release/releases/download/v0.5.1/rundroid-0.5.1-cp313-cp313-manylinux_2_34_x86_64.whl.sha256"
-sha256sum -c rundroid-0.5.1-cp313-cp313-manylinux_2_34_x86_64.whl.sha256
-```
-
-也可以用 `gh` 通过 GitHub API 下载：
-
-```bash
-gh release download v0.5.1 -R Lerr1uqs/rundroid-release -p '*.whl'
-```
-
 ## 常见问题
 
 ### `HTTP 504 Gateway Time-out`

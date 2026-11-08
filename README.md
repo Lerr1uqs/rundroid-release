@@ -12,8 +12,6 @@ rundroid 是一个 Python 运行时。它把 `.so` 或 APK 里的 native 代码�
 - 用 Python 快速验证 JNI / Java 交互
 - 给 native 代码加 breakpoint、watchpoint 和 trace
 
-本仓库只提供**二进制和 Python 接口**，不包含 Rust 源码。
-
 ## 安装
 
 Linux x86_64 + Python 3.13：
@@ -92,7 +90,7 @@ guest `.so` 是独立资源，按需下载。
 npx skills add https://github.com/Lerr1uqs/rundroid-release/tree/main/skills/rundroid-python
 ```
 
-skill 讲的是怎么用 rundroid 写 Python 脚本，不包含源码。
+skill 讲的是怎么用 rundroid 写 Python 脚本。
 
 ## 反馈
 
@@ -102,15 +100,6 @@ https://github.com/Lerr1uqs/rundroid-release/issues
 
 带上 rundroid 版本、平台和能复现的命令，会更容易定位。
 
-## 校验
-
-每个 wheel 都附带同名 `.sha256`。v0.5.1：
-
-```text
-049769029fbc80c6f0bc92b0f6403658c97bcd9ab56e43b4ef6752cfcf6183f8
-```
-
 ## 许可证
 
-MIT，见 [LICENSE](LICENSE)。wheel 内的第三方组件见 dist-info 的 CycloneDX SBOM；
-runtime image 的许可证见 ZIP 内的 `NOTICE/`。
+MIT，见 [LICENSE](LICENSE)。

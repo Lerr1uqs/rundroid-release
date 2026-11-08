@@ -10,7 +10,7 @@
 ## 准备
 
 ```bash
-# 首次使用前：下载、校验并安装
+# 首次使用前：下载并安装
 rundroid-fetch-system-libs download
 
 # 等价入口
@@ -24,7 +24,7 @@ rundroid-fetch-system-libs check
 rundroid-fetch-system-libs print-root
 ```
 
-只有 `download` 会联网并写入缓存。最终目录完成全量校验后才会原子发布；已存在但损坏的目录
+只有 `download` 会联网并写入缓存。最终目录完成完整性检查后才会原子发布；已存在但损坏的目录
 不会被覆盖。
 
 ## 缓存位置
@@ -43,17 +43,15 @@ RUNDROID_ASSETS_DIR=/path/to/cache rundroid-fetch-system-libs download
 
 runtime 与 test 资源使用独立的版本化子目录和 lock，互不隐式准备。
 
-## 版本与校验
+## 版本
 
 wheel 内的 `rundroid_resource_cli/resources/runtime-assets.lock.toml` 固定：
 
 - `asset_id`: `android-runtime-api33-arm64`
 - `version`: `TQ1A.230205.001.D2-9471403`
 - `release_url`: 本仓库对应 release 的 ZIP
-- `bundle_sha256`: `927b47236dfb91d580d98ab1e8293f4cbdb9aa430020da504692cdc8f6c62a5e`
-- `manifest_sha256`: `6b6cff8c8b2a82a4e95018e8c9ec1f31eac27039e6b593fb04a28c10d05cdeeb`
 
-下载流程会校验 ZIP 的 SHA-256，再按 manifest 校验每个文件，最后把完整目录原子替换到缓存。
+下载流程会检查 ZIP 和 manifest 中的文件，最后把完整目录原子替换到缓存。
 
 ## `update` 是开发工具
 

@@ -59,14 +59,6 @@ PY
 - 只有 runtime lock，没有 `test-assets.lock.toml`；
 - `METADATA` 的 `Version` 与文件名一致。
 
-## 校验和
-
-```bash
-cd dist
-sha256sum rundroid-<version>-cp313-cp313-manylinux_2_34_x86_64.whl \
-  > rundroid-<version>-cp313-cp313-manylinux_2_34_x86_64.whl.sha256
-```
-
 ## 干净环境验证
 
 在全新临时项目中用**公共 URL**安装：
@@ -80,7 +72,7 @@ uv add "rundroid @ https://github.com/Lerr1uqs/rundroid-release/releases/downloa
 .venv/bin/rundroid-fetch-system-libs print-root
 ```
 
-如果公共端点临时 504，可先用 `gh release download` 拉取同一资产，校验 SHA-256 后在本地安装；
+如果公共端点临时 504，可先用 `gh release download` 拉取同一资产，在本地安装；
 确认产物无误后再重试公共 URL。
 
 ## 上传
@@ -91,13 +83,12 @@ gh release create v<version> \
   --target main \
   --title "rundroid <version> (Linux x86_64)" \
   --notes-file /tmp/rundroid-v<version>-notes.md \
-  dist/rundroid-<version>-cp313-cp313-manylinux_2_34_x86_64.whl \
-  dist/rundroid-<version>-cp313-cp313-manylinux_2_34_x86_64.whl.sha256
+  dist/rundroid-<version>-cp313-cp313-manylinux_2_34_x86_64.whl
 ```
 
 ## 不可变规则
 
-- **不要覆盖同名资产**。uv 和 CI 会按 URL 缓存；同名不同字节会造成校验和/缓存问题。
+- **不要覆盖同名资产**。uv 和 CI 会按 URL 缓存；同名不同字节会造成缓存问题。
 - 修复发布问题时 **bump 版本**，例如 `0.5.1` → `0.5.2`，不要删除旧 tag 后重传。
 - wheel release 使用 `v<version>` tag；runtime image 使用独立的 asset tag。不要把两类资产
   混在同一个 tag 里。

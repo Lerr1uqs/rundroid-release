@@ -16,18 +16,18 @@
 
 - [x] 3.1 干净 uv 项目通过直链安装，`import rundroid` 与版本检查通过。
 - [x] 3.2 `rundroid-fetch-system-libs print-root` 在安装环境可读取包内 lock。
-- [x] 3.3 用本地 TLS 镜像验证 `download → SHA-256 → 解压 → check` 全链路。
+- [x] 3.3 用本地 TLS 镜像验证 `download → 解压 → check` 全链路。
 - [x] 3.4 发布前确认 `.so` 已 strip，wheel 约 9.7 MB。
 
 ## 4. 发布
 
 - [x] 4.1 发布 v0.5.0（Linux x86_64）。
-- [x] 4.2 发布 v0.5.1（修复 runtime lock 打包），上传 wheel 与 `.sha256`。
-- [x] 4.3 用 `gh release download` 校验远端字节与本地构建一致。
+- [x] 4.2 发布 v0.5.1（修复 runtime lock 打包），上传 wheel。
+- [x] 4.3 用 `gh release download` 确认远端字节与本地构建一致。
 
 ## 5. 发行仓库文档
 
-- [x] 5.1 重写 README：安装、平台、产物、runtime、校验、skill。
+- [x] 5.1 重写 README：安装、平台、产物、runtime、skill。
 - [x] 5.2 新增安装、产物、runtime assets、发布流程、仓库结构文档。
 - [x] 5.3 生成 4 张 SVG：直链安装、wheel 内容、runtime 流程、发布流程。
 - [x] 5.4 新增 `release-distribution` spec 与 `publish-binary-releases` change。

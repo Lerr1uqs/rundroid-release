@@ -6,7 +6,6 @@ ZIP 和一份占位 README，没有 Python 安装产物。
 
 约束：
 
-- 不发布 Rust 源码；wheel 不得包含源码树。
 - 使用者继续通过 `uv add` 安装，不要求额外的私有索引服务。
 - runtime image 已有不可变 lock 和 release URL 契约，不能因 wheel 发布而改变。
 - 发布资产不可变；同名文件不覆盖。
@@ -57,7 +56,7 @@ find-links 页面。
 
 ### runtime image 保持独立资产
 
-guest `.so` 约 3.3 MB，且已有独立的不可变 tag、lock、下载器与校验链路。把它并入 wheel
+guest `.so` 约 3.3 MB，且已有独立的不可变 tag、lock 和下载链路。把它并入 wheel
 会放大 wheel、破坏既有 lock 契约，也会让“仅 import SDK”的用户下载不必要的内容。
 
 ### release 文档自包含，不用符号链接
