@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="550" viewBox="0 0 1200 550" role="img" aria-labelledby="title desc">
+  <title id="title">rundroid Rust 核心执行链</title>
+  <desc id="desc">APK 或 so 经 ELF parser、loader、linker 装入 guest memory，由 Unicorn 执行 ARM64 指令。SVC 进入 Android kernel，JNI trampoline 进入 ART/JNI。Guest thread scheduler 选择 task 并恢复 CPU 上下文。</desc>
+  <defs>
+    <style>
+      .base{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+      .title{font-size:29px;font-weight:700;fill:#f8fafc}
+      .subtitle{font-size:15px;fill:#aab9cc}
+      .tag{font-size:12px;font-weight:700;letter-spacing:1px}
+      .heading{font-size:19px;font-weight:700;fill:#f8fafc}
+      .body{font-size:15px;fill:#c4d2e2}
+      .flow{font-size:14px;font-weight:650;fill:#a8e9f4}
+    </style>
+  </defs>
+
+  <!-- 主链自上而下：输入、ELF 装载、guest 内存和 CPU 执行。 -->
+  <rect width="1200" height="550" rx="22" fill="#0b1220"/>
+  <text class="base title" x="40" y="54">Rust 核心：从装载到执行</text>
+  <text class="base subtitle" x="41" y="83">装载链准备 guest 地址空间；执行中按事件进入 Android 与 JNI 语义</text>
+
+  <rect x="470" y="108" width="260" height="65" rx="12" fill="#25273d" stroke="#9b83b7" stroke-width="1.5"/>
+  <text class="base tag" x="490" y="132" fill="#d8b4fe">INPUT</text>
+  <text class="base heading" x="490" y="158">APK 内 .so / 独立 .so</text>
+  <path d="M600 177 V190" fill="none" stroke="#67e8f9" stroke-width="3" stroke-linecap="round"/>
+  <path d="M600 204 L592 190 H608 Z" fill="#67e8f9"/>
+
+  <rect x="470" y="212" width="260" height="76" rx="12" fill="#162f40" stroke="#4c9a95" stroke-width="1.5"/>
+  <text class="base heading" x="490" y="242">ELF 装载与链接</text>
+  <text class="base body" x="490" y="269">parser · loader · linker</text>
+  <path d="M600 292 V304" fill="none" stroke="#67e8f9" stroke-width="3" stroke-linecap="round"/>
+  <path d="M600 318 L592 304 H608 Z" fill="#67e8f9"/>
+
+  <rect x="470" y="326" width="260" height="88" rx="12" fill="#174145" stroke="#4c9a95" stroke-width="1.5"/>
+  <text class="base tag" x="490" y="350" fill="#6ee7b7">EXECUTION</text>
+  <text class="base heading" x="490" y="380">Unicorn ARM64</text>
+  <text class="base body" x="490" y="401">guest 内存与 CPU 状态</text>
+
+  <!-- CPU 执行遇到 SVC 或 JNI trampoline 时，分别交给对应语义层处理。 -->
+  <text class="base flow" x="425" y="347" text-anchor="middle">SVC</text>
+  <path d="M466 371 H394" fill="none" stroke="#67e8f9" stroke-width="3" stroke-linecap="round"/>
+  <path d="M380 371 L394 363 V379 Z" fill="#67e8f9"/>
+  <rect x="40" y="326" width="330" height="88" rx="12" fill="#172d43" stroke="#4379a8" stroke-width="1.5"/>
+  <text class="base heading" x="60" y="359">Android kernel</text>
+  <text class="base body" x="60" y="388">syscall · fd/VFS · signal · futex</text>
+
+  <text class="base flow" x="775" y="347" text-anchor="middle">JNI</text>
+  <path d="M734 371 H806" fill="none" stroke="#67e8f9" stroke-width="3" stroke-linecap="round"/>
+  <path d="M820 371 L806 363 V379 Z" fill="#67e8f9"/>
+  <rect x="830" y="326" width="330" height="88" rx="12" fill="#302b43" stroke="#9b83b7" stroke-width="1.5"/>
+  <text class="base heading" x="850" y="359">ART / JNI bridge</text>
+  <text class="base body" x="850" y="388">引用 · framework · native dispatch</text>
+
+  <!-- 调度器持有 guest task/context；它选择执行资格，不创建宿主后台线程。 -->
+  <path d="M600 456 V431" fill="none" stroke="#67e8f9" stroke-width="3" stroke-linecap="round"/>
+  <path d="M600 418 L592 432 H608 Z" fill="#67e8f9"/>
+  <rect x="470" y="464" width="260" height="64" rx="12" fill="#12354a" stroke="#287a94" stroke-width="1.5"/>
+  <text class="base heading" x="490" y="490">Guest 线程调度</text>
+  <text class="base body" x="490" y="514">task · context · quantum</text>
+</svg>

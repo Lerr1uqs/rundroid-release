@@ -20,7 +20,7 @@ rundroid 把 APK 或 `.so` 放进可控的 Android guest：Rust 负责 ARM64 执
 | **从 Java 声明调用 native** | 通过 JNI descriptor 查找 `RegisterNatives` 或 `Java_*` 入口；`invoke_native` 自动处理 `JNIEnv*`、对象引用、参数编组和返回值。 |
 | **用 Python 补 Java 行为** | 声明 Java class、方法和字段，为已有 framework 类扩展成员，或临时 hook、override、supplement 一个 Java 方法。无需运行 DEX 字节码。 |
 | **给目标构造设备环境** | 配置系统属性、Settings、进程身份和文件系统；提供虚拟文件/设备、stdio 与 logcat，让目标读到脚本指定的值。 |
-| **在执行现场观察和改写** | 下断点、监听读写、拦截 syscall/libc 入口；在回调中查看寄存器、内存、栈、符号与 JNI 对象，按需修改执行状态。 |
+| **在执行现场观察和改写** | 断点、读写 watchpoint 与 syscall hook 可查看和修改现场；libc interposer 在真实函数入口回调 Python，可继续原函数或接管返回值。 |
 | **控制 guest 线程** | 按需启用协作式线程调度，查询并冻结 guest 子线程，围绕多线程 native 路径定位问题。 |
 | **留下可分析的证据** | 按范围或符号采集指令 trace，筛选 guest 事件；执行出错时查看 crashdump。固定 seed 便于复现依赖随机数的路径。 |
 
@@ -34,7 +34,10 @@ rundroid 把 APK 或 `.so` 放进可控的 Android guest：Rust 负责 ARM64 执
 from rundroid import AndroidEnvProfile, Emulator
 
 profile = AndroidEnvProfile.from_mapping({
-    "framework": {"system_properties": {"ro.product.model": "rundroid"}},
+    "framework": {"system_properties": {
+        "ro.build.version.sdk": "33",
+        "ro.product.model": "rundroid",
+    }},
     "syscall": {"cwd": "/data/local/tmp"},
 })
 
@@ -56,7 +59,72 @@ native = emu.jni.find_native(
 result = emu.invoke_native(native, b"payload")
 ```
 
-第二段适用于实际导出 `JNI_OnLoad` 并注册了该方法的库。Java shim 与断点的完整写法见 [Python 使用 Skill](skills/rundroid-python/SKILL.md)。
+第二段适用于实际导出 `JNI_OnLoad` 并注册了该方法的库。调用前还需注册目标用到的 Java class/native 声明；完整写法见 [Python 使用 Skill](skills/rundroid-python/SKILL.md)。
+
+## 示例：补环境、挂虚拟文件、拦截和调试
+
+下面假设目标会读取 `/proc/self/status`、调用 libc 的 `strlen`，并导出 `target_fn`。换成目标实际使用的路径和符号即可；这些设置都发生在装载或调用之前。
+
+```python
+from rundroid import AndroidEnvProfile, CpuContext, Emulator, Interceptor, VirtFile
+
+profile = AndroidEnvProfile.from_mapping({
+    "framework": {
+        "system_properties": {
+            "ro.build.version.sdk": "33",
+            "ro.product.model": "Pixel 7",
+        },
+        "settings": {"secure": {"android_id": "0123456789abcdef"}},
+    },
+    "syscall": {"cwd": "/data/local/tmp", "pid": 1234},
+})
+emu = Emulator("arm64", "unicorn", 42, profile=profile)
+
+# guest 的 open/read 会读取这份内存文件，而不是宿主的 /proc。
+emu.fs.map_file(
+    "/proc/self/status",
+    VirtFile.bytes(b"Name:\ttarget\nPid:\t1234\n"),
+)
+
+@Interceptor.libc("strlen")
+def on_strlen(cpu: CpuContext) -> bool:
+    """在真实 libc 入口观察字符串，继续执行原函数。"""
+    print("strlen input:", cpu.cdt.read_utf8("x0"))
+    return False
+
+# libc interposer 必须在首次 load 之前注册，constructor 中的调用也会命中。
+emu.interceptor.register([on_strlen])
+module = emu.load("libfoo.so")
+
+def on_target(cpu: CpuContext, address: int) -> bool:
+    """在 native 入口查看并修改第一个 ARM64 参数。"""
+    print(f"hit {address:#x}, x0={cpu.regs.x0:#x}")
+    cpu.regs.x0 = 42
+    return True
+
+emu.breakpoint.add("target_fn", on_target)
+with emu.trace_symbol(
+    module,
+    "target_fn",
+    output="target.trace",
+    whitelist_mods=["libfoo.so"],
+):
+    print(emu.call("target_fn", 1, 2))
+emu.close()
+```
+
+`return False` 让 `strlen` 从真实首指令继续执行；若要替换结果，在回调中调用 `cpu.cdt.set_retval(...)` 并返回 `True`。断点里的 `CpuContext` 只在当前回调有效。虚拟文件也可由 `VirtFile.host(...)` 指向显式授权的宿主文件，或用动态 provider 按需生成内容。
+
+## Rust 核心怎样协同
+
+![Rust 核心从 ELF 装载到 ARM64 执行，并由 Android kernel、ART/JNI 和 guest 线程调度器支撑](docs/diagrams/core-runtime.svg)
+
+- **ELF parser / loader / linker** 解析 ARM64 ELF、映射段、处理依赖与重定位，再按顺序执行 constructor；APK 内的 native 库走同一条装载链。
+- **内存与 Unicorn** 持有 guest 地址空间和 CPU 状态。目标的真实 ARM64 指令在这里执行；断点、访存监听与指令 trace 接在执行现场。
+- **Android kernel 与 ART/JNI** 分别接住 syscall 和 JNI 调用：文件、fd、线程、信号等由 kernel 模拟，Java 引用、framework stub 与 native 参数由 ART/JNI 桥处理。
+- **Guest 线程调度器** 在一个宿主线程上保存、切换 guest task 的 CPU 上下文，协调 `clone`、`futex` 与等待。创建 `Emulator(..., thread_scheduler=True)` 后，可在两次 guest 调用之间通过 `emu.thread_scheduler_snapshot()` 查看线程，用 `emu.threads.freeze(tid)` / `unfreeze(tid)` 控制子线程的调度资格。
+
+这套分层让 Python 专注于目标特有的补环境与观察逻辑，Rust 负责执行与 Android 语义。当前是单 guest 进程模型，guest 线程不会变成宿主后台线程。
 
 ## 安装
 

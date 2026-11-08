@@ -1,95 +1,92 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
-  <title id="title">rundroid 架构：Python 定义环境，Rust 执行 Android ARM64 native</title>
-  <desc id="desc">Python 脚本通过 PyO3 配置 Java shim、设备环境、拦截和调试。Rust 核心处理 ELF 链接、Android syscall、ART/JNI 与 Unicorn ARM64 执行，运行 APK 或独立 so 的 native 代码，并向 Python 返回结果、事件、trace 和 crashdump。</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+  <title id="title">rundroid 架构：Python 控制 Android ARM64 native 执行</title>
+  <desc id="desc">Python 脚本配置 Java 与设备环境，并通过 PyO3 调用 Rust 运行时。Rust 负责 ELF 链接、Android kernel、ART/JNI 和 Unicorn ARM64，执行 APK 或 so 的 native 代码。运行时向 Python 回调，并返回调用结果、事件和调试信息。</desc>
   <defs>
     <style>
       .base{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
       .mono{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace}
-      .hero{font-size:31px;font-weight:750;fill:#f8fafc}
+      .title{font-size:31px;font-weight:700;fill:#f8fafc}
       .subtitle{font-size:16px;fill:#aab9cc}
-      .eyebrow{font-size:13px;font-weight:700;letter-spacing:1.2px}
-      .heading{font-size:22px;font-weight:720;fill:#f8fafc}
-      .body{font-size:15px;fill:#cfdbeb}
-      .small{font-size:13px;fill:#9fb0c7}
-      .chip{font-size:14px;font-weight:650;fill:#e7eef8}
-      .output{font-size:16px;font-weight:650;fill:#eff6ff}
+      .tag{font-size:13px;font-weight:700;letter-spacing:1px}
+      .heading{font-size:22px;font-weight:700;fill:#f8fafc}
+      .card-title{font-size:16px;font-weight:650;fill:#f0f7ff}
+      .body{font-size:14px;fill:#aebfd2}
+      .flow-label{font-size:14px;font-weight:650;fill:#a8e9f4}
+      .output{font-size:16px;font-weight:600;fill:#eaf6ff}
     </style>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
-      <path d="M0 0 L10 5 L0 10 Z" fill="#67e8f9"/>
-    </marker>
-    <marker id="arrow-back" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="8" markerHeight="8" orient="auto">
-      <path d="M10 0 L0 5 L10 10 Z" fill="#67e8f9"/>
-    </marker>
   </defs>
 
-  <!-- 顶部先说明两层分工，再展示组件。 -->
-  <rect width="1200" height="630" rx="22" fill="#0b1220"/>
-  <text class="base hero" x="38" y="57">Python 定义环境 · Rust 负责执行</text>
-  <text class="base subtitle" x="39" y="87">同一进程内，把 Android native 调用变成可编排、可观察的脚本流程</text>
+  <!-- 三栏顶部共用一条基线；留出完整的连接通道。 -->
+  <rect width="1200" height="620" rx="22" fill="#0b1220"/>
+  <text class="base title" x="40" y="55">Python 定义环境 · Rust 负责执行</text>
+  <text class="base subtitle" x="41" y="86">在同一进程里装载、调用并分析 Android ARM64 native 代码</text>
 
-  <!-- Python 控制面：脚本决定 guest 看见什么、在哪里停下。 -->
-  <rect x="38" y="126" width="300" height="382" rx="18" fill="#142238" stroke="#4379a8" stroke-width="1.5"/>
-  <rect x="57" y="145" width="74" height="26" rx="13" fill="#153d59"/>
-  <text class="base eyebrow" x="71" y="163" fill="#7dd3fc">CONTROL</text>
-  <text class="base heading" x="58" y="206">Python 脚本</text>
-  <text class="base small" x="58" y="230">输入、补环境、现场控制</text>
-  <rect x="58" y="251" width="260" height="49" rx="9" fill="#1c334c"/>
-  <text class="base chip" x="74" y="281">Java shim / method interceptor</text>
-  <rect x="58" y="309" width="260" height="49" rx="9" fill="#1c334c"/>
-  <text class="base chip" x="74" y="339">设备 Profile / 虚拟文件与设备</text>
-  <rect x="58" y="367" width="260" height="49" rx="9" fill="#1c334c"/>
-  <text class="base chip" x="74" y="397">断点 / watchpoint / syscall hook</text>
-  <rect x="58" y="425" width="260" height="49" rx="9" fill="#1c334c"/>
-  <text class="base chip" x="74" y="455">trace / 内存与 JNI inspection</text>
+  <!-- Python 控制层：脚本决定输入、环境和观察点。 -->
+  <rect x="40" y="138" width="300" height="358" rx="16" fill="#142238" stroke="#4379a8" stroke-width="1.5"/>
+  <text class="base tag" x="60" y="174" fill="#7dd3fc">01  PYTHON CONTROL</text>
+  <text class="base heading" x="60" y="208">Python 脚本</text>
+  <text class="base body" x="60" y="233">定义 guest 看见什么、在哪里停下</text>
+  <rect x="60" y="257" width="260" height="62" rx="9" fill="#1c334c"/>
+  <text class="base card-title" x="76" y="282">Java 与设备环境</text>
+  <text class="base body" x="76" y="304">shim、属性、文件、虚拟设备</text>
+  <rect x="60" y="330" width="260" height="62" rx="9" fill="#1c334c"/>
+  <text class="base card-title" x="76" y="355">Hook 与断点</text>
+  <text class="base body" x="76" y="377">Java、syscall、libc、内存</text>
+  <rect x="60" y="403" width="260" height="62" rx="9" fill="#1c334c"/>
+  <text class="base card-title" x="76" y="428">Trace 与现场调试</text>
+  <text class="base body" x="76" y="450">寄存器、栈、符号、JNI 对象</text>
 
-  <!-- PyO3 边界双向工作：Python 发起执行，Rust 命中时回调脚本。 -->
-  <path d="M345 318 H378" stroke="#67e8f9" stroke-width="2.5" marker-start="url(#arrow-back)" marker-end="url(#arrow)"/>
-  <text class="base small mono" x="345" y="296" fill="#67e8f9">PyO3</text>
+  <!-- PyO3 有两条独立路径，箭头直接绘制，避免缩放时 marker 叠成菱形。 -->
+  <text class="base flow-label" x="380" y="269" text-anchor="middle">调用</text>
+  <path d="M354 287 H399" fill="none" stroke="#67e8f9" stroke-width="3" stroke-linecap="round"/>
+  <path d="M410 287 L396 279 V295 Z" fill="#67e8f9"/>
+  <text class="base flow-label" x="380" y="346" text-anchor="middle">回调</text>
+  <path d="M407 364 H362" fill="none" stroke="#67e8f9" stroke-width="3" stroke-linecap="round"/>
+  <path d="M351 364 L365 356 V372 Z" fill="#67e8f9"/>
+  <text class="base body mono" x="380" y="322" text-anchor="middle">PyO3</text>
 
-  <!-- Rust 执行面：装载、系统语义、JNI 与 CPU 在核心层协同。 -->
-  <rect x="384" y="126" width="508" height="382" rx="18" fill="#162836" stroke="#4c9a95" stroke-width="1.5"/>
-  <rect x="404" y="145" width="81" height="26" rx="13" fill="#164940"/>
-  <text class="base eyebrow" x="419" y="163" fill="#6ee7b7">RUNTIME</text>
-  <text class="base heading" x="405" y="206">Rust 执行核心</text>
-  <text class="base small" x="405" y="230">固定 Android 13 / API 33 · ARM64 guest</text>
-  <rect x="405" y="252" width="223" height="96" rx="10" fill="#1e3b44"/>
-  <text class="base chip" x="421" y="283">ELF loader + linker</text>
-  <text class="base small" x="421" y="311">依赖、重定位、constructor</text>
-  <rect x="647" y="252" width="223" height="96" rx="10" fill="#1e3b44"/>
-  <text class="base chip" x="663" y="283">Android kernel</text>
-  <text class="base small" x="663" y="311">syscall、文件、线程、信号</text>
-  <rect x="405" y="362" width="223" height="96" rx="10" fill="#1e3b44"/>
-  <text class="base chip" x="421" y="393">ART / JNI bridge</text>
-  <text class="base small" x="421" y="421">Java 引用与 native 编组</text>
-  <rect x="647" y="362" width="223" height="96" rx="10" fill="#1e3b44"/>
-  <text class="base chip" x="663" y="393">Unicorn ARM64</text>
-  <text class="base small" x="663" y="421">CPU、guest 内存与 code hook</text>
+  <!-- Rust 执行层：四个协同组件都处于同一运行时。 -->
+  <rect x="420" y="138" width="480" height="358" rx="16" fill="#162836" stroke="#4c9a95" stroke-width="1.5"/>
+  <text class="base tag" x="440" y="174" fill="#6ee7b7">02  RUST RUNTIME</text>
+  <text class="base heading" x="440" y="208">Rust 执行核心</text>
+  <text class="base body" x="440" y="233">固定 Android 13 / API 33 · ARM64 guest</text>
+  <rect x="440" y="257" width="210" height="96" rx="9" fill="#1e3b44"/>
+  <text class="base card-title" x="456" y="289">ELF loader + linker</text>
+  <text class="base body" x="456" y="317">依赖、重定位、constructor</text>
+  <rect x="670" y="257" width="210" height="96" rx="9" fill="#1e3b44"/>
+  <text class="base card-title" x="686" y="289">Android kernel</text>
+  <text class="base body" x="686" y="317">syscall、文件、线程、信号</text>
+  <rect x="440" y="369" width="210" height="96" rx="9" fill="#1e3b44"/>
+  <text class="base card-title" x="456" y="401">ART / JNI bridge</text>
+  <text class="base body" x="456" y="429">Java 引用与 native 编组</text>
+  <rect x="670" y="369" width="210" height="96" rx="9" fill="#1e3b44"/>
+  <text class="base card-title" x="686" y="401">Unicorn ARM64</text>
+  <text class="base body" x="686" y="429">CPU、内存、code hook</text>
 
-  <!-- Guest 是被仿真的目标地址空间，并非另起 Android 进程。 -->
-  <path d="M899 318 H932" stroke="#67e8f9" stroke-width="2.5" marker-end="url(#arrow)"/>
-  <rect x="938" y="126" width="224" height="382" rx="18" fill="#25273d" stroke="#9b83b7" stroke-width="1.5"/>
-  <rect x="958" y="145" width="62" height="26" rx="13" fill="#443454"/>
-  <text class="base eyebrow" x="971" y="163" fill="#d8b4fe">GUEST</text>
-  <text class="base heading" x="958" y="206">Android native</text>
-  <text class="base small" x="958" y="230">被分析的目标与依赖</text>
-  <rect x="958" y="252" width="184" height="58" rx="9" fill="#36334b"/>
-  <text class="base chip mono" x="974" y="286">APK / libfoo.so</text>
-  <rect x="958" y="320" width="184" height="58" rx="9" fill="#36334b"/>
-  <text class="base chip mono" x="974" y="354">/system/lib64</text>
-  <text class="base body" x="958" y="424">真实 ARM64 指令</text>
-  <text class="base small" x="958" y="450">在受控 guest 中运行</text>
+  <!-- Guest 是 Rust 维护的目标地址空间，连接线居于两栏中线。 -->
+  <text class="base flow-label" x="940" y="286" text-anchor="middle">执行</text>
+  <path d="M914 314 H959" fill="none" stroke="#67e8f9" stroke-width="3" stroke-linecap="round"/>
+  <path d="M970 314 L956 306 V322 Z" fill="#67e8f9"/>
+  <rect x="980" y="138" width="180" height="358" rx="16" fill="#25273d" stroke="#9b83b7" stroke-width="1.5"/>
+  <text class="base tag" x="998" y="174" fill="#d8b4fe">03  GUEST</text>
+  <text class="base heading" x="998" y="208">Native 目标</text>
+  <text class="base body" x="998" y="233">Android ARM64 与依赖</text>
+  <rect x="998" y="257" width="144" height="86" rx="9" fill="#36334b"/>
+  <text class="base card-title" x="1014" y="289">目标库</text>
+  <text class="base body mono" x="1014" y="315">APK / .so</text>
+  <rect x="998" y="357" width="144" height="86" rx="9" fill="#36334b"/>
+  <text class="base card-title" x="1014" y="389">系统依赖</text>
+  <text class="base body mono" x="1014" y="415">/system/lib64</text>
 
-  <!-- 执行结果回到脚本，形成分析闭环。 -->
-  <path d="M638 509 V537" stroke="#67e8f9" stroke-width="2.5" marker-end="url(#arrow)"/>
-  <rect x="38" y="546" width="1124" height="58" rx="12" fill="#12354a" stroke="#287a94"/>
-  <text class="base eyebrow" x="59" y="581" fill="#67e8f9">OUTPUT</text>
-  <text class="base output" x="151" y="582">native 返回值</text>
-  <circle cx="333" cy="576" r="3" fill="#67e8f9"/>
-  <text class="base output" x="350" y="582">GuestEvent</text>
-  <circle cx="518" cy="576" r="3" fill="#67e8f9"/>
-  <text class="base output" x="535" y="582">指令 trace</text>
-  <circle cx="696" cy="576" r="3" fill="#67e8f9"/>
-  <text class="base output" x="713" y="582">crashdump</text>
-  <circle cx="875" cy="576" r="3" fill="#67e8f9"/>
-  <text class="base output" x="892" y="582">Python 后续分析</text>
+  <!-- 结果从运行时向下返回；输出栏与三个主面板等宽对齐。 -->
+  <path d="M660 500 V522" fill="none" stroke="#67e8f9" stroke-width="3" stroke-linecap="round"/>
+  <path d="M660 538 L652 524 H668 Z" fill="#67e8f9"/>
+  <rect x="40" y="548" width="1120" height="58" rx="11" fill="#12354a" stroke="#287a94"/>
+  <text class="base tag" x="60" y="582" fill="#67e8f9">OUTPUT</text>
+  <text class="base output" x="172" y="583">native 返回值</text>
+  <path d="M340 564 V590 M540 564 V590 M730 564 V590 M905 564 V590" stroke="#287a94" stroke-width="1.5"/>
+  <text class="base output" x="366" y="583">GuestEvent</text>
+  <text class="base output" x="566" y="583">指令 trace</text>
+  <text class="base output" x="756" y="583">crashdump</text>
+  <text class="base output" x="931" y="583">Python 后续分析</text>
 </svg>
